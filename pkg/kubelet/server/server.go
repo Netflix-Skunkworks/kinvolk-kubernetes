@@ -969,6 +969,14 @@ func containerPrometheusLabelsFunc(s stats.Provider) metrics.ContainerLabelsFunc
 			"namespace":        namespace,
 			"container":        containerName,
 		}
+
+		// This behavior is borrowed from CAdvisor's default labeling behavior
+		// https://github.com/google/cadvisor/blob/master/metrics/prometheus.go#L1786-L1788
+		const ContainerLabelPrefix string = "container_label_"
+		for k, v := range c.Spec.Labels {
+			set[ContainerLabelPrefix+k] = v
+		}
+
 		return set
 	}
 }
