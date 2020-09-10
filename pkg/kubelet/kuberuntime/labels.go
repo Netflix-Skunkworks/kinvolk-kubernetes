@@ -98,6 +98,10 @@ func newPodAnnotations(pod *v1.Pod) map[string]string {
 // newContainerLabels creates container labels from v1.Container and v1.Pod.
 func newContainerLabels(container *v1.Container, pod *v1.Pod) map[string]string {
 	labels := map[string]string{}
+	for k, v := range pod.Labels {
+		labels[k] = v
+	}
+
 	labels[types.KubernetesPodNameLabel] = pod.Name
 	labels[types.KubernetesPodNamespaceLabel] = pod.Namespace
 	labels[types.KubernetesPodUIDLabel] = string(pod.UID)
