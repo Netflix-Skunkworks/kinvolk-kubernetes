@@ -30,7 +30,18 @@ import (
 
 // NewSourceApiserver creates a config source that watches and pulls from the apiserver.
 func NewSourceApiserver(c clientset.Interface, nodeName types.NodeName, updates chan<- interface{}) {
-	lw := cache.NewListWatchFromClient(c.CoreV1().RESTClient(), "pods", metav1.NamespaceAll, fields.OneTermEqualSelector(api.PodHostField, string(nodeName)))
+	optionsModifier := func(options *metav1.ListOptions) {
+		fs := fields.OneTermEqualSelector(api.PodHostField, string(nodeName))
+		options.FieldSelector = fs.String()
+		ls := &metav1.LabelSelector{
+			MatchLabels: map[string]string{
+				"v1.networking.titus.netflix.com/eni-allocated": "true",
+			},
+		}
+		options.LabelSelector = ls.String()
+	}
+
+	lw := cache.NewFilteredListWatchFromClient(c.CoreV1().RESTClient(), "pods", metav1.NamespaceAll, optionsModifier)
 	newSourceApiserverFromLW(lw, updates)
 }
 
