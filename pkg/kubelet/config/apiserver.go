@@ -20,6 +20,7 @@ import (
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
@@ -30,12 +31,25 @@ import (
 
 // NewSourceApiserver creates a config source that watches and pulls from the apiserver.
 func NewSourceApiserver(c clientset.Interface, nodeName types.NodeName, updates chan<- interface{}) {
-	lw := cache.NewListWatchFromClient(c.CoreV1().RESTClient(), "pods", metav1.NamespaceAll, fields.OneTermEqualSelector(api.PodHostField, string(nodeName)))
-	newSourceApiserverFromLW(lw, updates)
+	NewSourceApiserverWithStop(c, nodeName, updates, wait.NeverStop)
+}
+
+func NewSourceApiserverWithStop(c clientset.Interface, nodeName types.NodeName, updates chan<- interface{}, stop <-chan struct{}) {
+	fieldSelector := fields.OneTermEqualSelector(api.PodHostField, string(nodeName))
+	labelSelector := labels.SelectorFromSet(labels.Set{
+		"network.titus.com/eni": "allocated",
+	})
+	optionsModifier := func(options *metav1.ListOptions) {
+		options.FieldSelector = fieldSelector.String()
+		options.LabelSelector = labelSelector.String()
+	}
+	lw := cache.NewFilteredListWatchFromClient(c.CoreV1().RESTClient(), "pods", metav1.NamespaceAll, optionsModifier)
+	r := newSourceApiserverFromLW(lw, updates)
+	go r.Run(stop)
 }
 
 // newSourceApiserverFromLW holds creates a config source that watches and pulls from the apiserver.
-func newSourceApiserverFromLW(lw cache.ListerWatcher, updates chan<- interface{}) {
+func newSourceApiserverFromLW(lw cache.ListerWatcher, updates chan<- interface{}) *cache.Reflector {
 	send := func(objs []interface{}) {
 		var pods []*v1.Pod
 		for _, o := range objs {
@@ -43,6 +57,5 @@ func newSourceApiserverFromLW(lw cache.ListerWatcher, updates chan<- interface{}
 		}
 		updates <- kubetypes.PodUpdate{Pods: pods, Op: kubetypes.SET, Source: kubetypes.ApiserverSource}
 	}
-	r := cache.NewReflector(lw, &v1.Pod{}, cache.NewUndeltaStore(send, cache.MetaNamespaceKeyFunc), 0)
-	go r.Run(wait.NeverStop)
+	return cache.NewReflector(lw, &v1.Pod{}, cache.NewUndeltaStore(send, cache.MetaNamespaceKeyFunc), 0)
 }
