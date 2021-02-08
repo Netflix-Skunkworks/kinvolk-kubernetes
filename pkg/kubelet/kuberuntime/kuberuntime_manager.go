@@ -321,7 +321,7 @@ func (m *kubeGenericRuntimeManager) Status() (*kubecontainer.RuntimeStatus, erro
 // GetRuntimeConfigInfo returns runtime configuration details cached at runtime manager
 // nil is returned if the runtime doesn't support this method.
 func (m *kubeGenericRuntimeManager) GetRuntimeConfigInfo() (*kubecontainer.RuntimeConfigInfo, error) {
-	if m.runtimeConfigCached  {
+	if m.runtimeConfigCached {
 		return m.runtimeConfig, nil
 	}
 	runtimeConfig, err := m.runtimeService.GetRuntimeConfigInfo()
@@ -1089,10 +1089,6 @@ func (m *kubeGenericRuntimeManager) SyncPod(pod *v1.Pod, podStatus *kubecontaine
 		klog.Error(message)
 		configPodSandboxResult.Fail(kubecontainer.ErrConfigPodSandbox, message)
 		return
-	}
-
-	if userns, err := m.runtimeHelper.UserNamespaceForPod(pod); err == nil && userns == runtimeapi.NamespaceMode_POD {
-		m.chownAllFilesAt(m.runtimeHelper.GetPodVolumesDir(pod.UID))
 	}
 
 	// Helper containing boilerplate common to starting all types of containers.

@@ -18,12 +18,11 @@ package kuberuntime
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	runtimeapi "k8s.io/cri-api/pkg/apis/runtime/v1alpha2"
 	"k8s.io/klog"
@@ -306,46 +305,4 @@ func (m *kubeGenericRuntimeManager) namespacesForPod(pod *v1.Pod) (*runtimeapi.N
 		Pid:     pidNamespaceForPod(pod),
 		User:    user,
 	}, nil
-}
-
-// getHostUID returns UID on host namespace which is mapped to given UID on container namespace
-func (m *kubeGenericRuntimeManager) getHostUID(containerUID uint32) (uint32, error) {
-	return m.runtimeConfig.GetHostUIDFor(containerUID)
-}
-
-// getHostUID returns GID on host namespace which is mapped to given GID on container namespace
-func (m *kubeGenericRuntimeManager) getHostGID(containerGID uint32) (uint32, error) {
-	return m.runtimeConfig.GetHostGIDFor(containerGID)
-}
-
-// chownAllFilesAt traverses the directory tree at the give path and chowns the paths to adjust for the remapped usernamespaces
-func (m *kubeGenericRuntimeManager) chownAllFilesAt(dir string) error {
-	var files []string
-
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		files = append(files, path)
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-	klog.V(5).Infof("Chowned paths %v", files)
-	for _, file := range files {
-		containerUID := uint32(0)
-		containerGID := uint32(0)
-		uid, err := m.getHostUID(containerUID)
-		if err != nil {
-			return fmt.Errorf("Failed to get remapped host UID corresponding to UID 0 in container namespace: %v", err)
-		}
-		gid, err := m.getHostGID(containerGID)
-		if err != nil {
-			return fmt.Errorf("Failed to get remapped host GID corresponding to GID 0 in container namespace: %v", err)
-		}
-		klog.V(5).Infof("Remapped default uid %d, default gid %d path %s", uid, gid, file)
-		err = os.Lchown(file, int(uid), int(gid))
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
