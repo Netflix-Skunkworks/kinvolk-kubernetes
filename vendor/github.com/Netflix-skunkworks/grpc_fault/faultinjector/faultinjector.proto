@@ -1,0 +1,61 @@
+syntax = "proto3";
+option go_package = "faultinjector";
+
+package faultinjector;
+
+
+service FaultInjector {
+    // Sends a greeting
+    rpc EnumerateServices (EnumerateServicesRequest) returns (EnumerateServicesResponse) {}
+    rpc RegisterFault (RegisterFaultRequest) returns (RegisterFaultResponse) {}
+    rpc RemoveFault (RemoveFaultRequest) returns (RemoveFaultResponse) {}
+    rpc Listen (ListenRequest) returns (stream ListenResponse) {}
+};
+
+message EnumerateServicesRequest {
+
+}
+
+message EnumerateServicesResponse {
+    repeated Service services = 1;
+}
+
+message Service {
+    string name = 1;
+    repeated Method methods = 2;
+}
+
+message Method {
+    string name = 1;
+    string expression = 2;
+}
+
+message RegisterFaultRequest {
+    string service = 1;
+    string method = 2;
+    string expression = 3;
+}
+
+message RegisterFaultResponse {
+
+}
+
+message RemoveFaultRequest {
+    string service = 1;
+    string method = 2;
+}
+
+message RemoveFaultResponse {
+
+}
+
+message ListenRequest {
+    string service = 1;
+    string method = 2;
+}
+
+message ListenResponse {
+    string request = 1;
+    string reply = 2;
+    string error = 3;
+}
