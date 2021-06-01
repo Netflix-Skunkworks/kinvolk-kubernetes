@@ -28,9 +28,11 @@ import (
 
 	grpcprom "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"go.etcd.io/etcd/clientv3"
+	"go.etcd.io/etcd/etcdserver/etcdserverpb"
 	"go.etcd.io/etcd/pkg/transport"
 	"google.golang.org/grpc"
 
+	grpc_fault "github.com/Netflix-skunkworks/grpc_fault/service"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apiserver/pkg/server/egressselector"
@@ -64,6 +66,7 @@ func init() {
 	// For reference: https://github.com/kubernetes/kubernetes/pull/81387
 	legacyregistry.RawMustRegister(grpcprom.DefaultClientMetrics)
 	dbMetricsMonitors = make(map[string]struct{})
+	grpc_fault.RegisterInterceptor(etcdserverpb.KV_serviceDesc)
 }
 
 func newETCD3HealthCheck(c storagebackend.Config) (func() error, error) {
@@ -128,6 +131,7 @@ func newETCD3Client(c storagebackend.TransportConfig) (*clientv3.Client, error) 
 	dialOptions := []grpc.DialOption{
 		grpc.WithBlock(), // block until the underlying connection is up
 		grpc.WithUnaryInterceptor(grpcprom.UnaryClientInterceptor),
+		grpc.WithUnaryInterceptor(grpc_fault.UnaryClientInterceptor),
 		grpc.WithStreamInterceptor(grpcprom.StreamClientInterceptor),
 	}
 	if egressDialer != nil {

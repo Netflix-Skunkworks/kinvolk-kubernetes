@@ -18,6 +18,7 @@ require (
 	github.com/JeffAshton/win_pdh v0.0.0-20161109143554-76bb4ee9f0ab
 	github.com/Microsoft/go-winio v0.4.15-0.20190919025122-fc70bd9a86b5
 	github.com/Microsoft/hcsshim v0.8.10-0.20200715222032-5eafd1556990
+	github.com/Netflix-skunkworks/grpc_fault v0.0.0-20210601181203-30ae9443e1c0 // indirect
 	github.com/PuerkitoBio/purell v1.1.1
 	github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e
 	github.com/auth0/go-jwt-middleware v0.0.0-20170425171159-5493cabe49f7 // indirect
@@ -92,7 +93,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.4.0
 	github.com/storageos/go-api v0.0.0-20180912212459-343b3eff91fc
-	github.com/stretchr/testify v1.4.0
+	github.com/stretchr/testify v1.5.1
 	github.com/thecodeteam/goscaleio v0.1.0
 	github.com/urfave/negroni v1.0.0 // indirect
 	github.com/vishvananda/netlink v1.1.0
@@ -103,7 +104,7 @@ require (
 	golang.org/x/oauth2 v0.0.0-20191202225959-858c2ad4c8b6
 	golang.org/x/sys v0.0.0-20201112073958-5cba982894dd
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
-	golang.org/x/tools v0.0.0-20210106214847-113979e3529a
+	golang.org/x/tools v0.1.0
 	gonum.org/v1/gonum v0.6.2
 	gonum.org/v1/netlib v0.0.0-20190331212654-76723241ea4e // indirect
 	google.golang.org/api v0.15.1
@@ -414,7 +415,7 @@ replace (
 	github.com/xordataexchange/crypt => github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77
 	github.com/yuin/goldmark => github.com/yuin/goldmark v1.2.1
 	go.etcd.io/bbolt => go.etcd.io/bbolt v1.3.5
-	go.etcd.io/etcd => go.etcd.io/etcd v0.5.0-alpha.5.0.20200819165624-17cef6e3e9d5 // 17cef6e3e9d5 is the SHA for git tag v3.4.12
+	go.etcd.io/etcd => github.com/Netflix-skunkworks/etcd v0.5.0-alpha.5.0.20210527212024-7205e88e9d18 // 7205e88e9d is based off of (but with fault injection) 17cef6e3e9d5. 17cef6e3e9d5 is the SHA for git tag v3.4.12
 	go.mongodb.org/mongo-driver => go.mongodb.org/mongo-driver v1.1.2
 	go.opencensus.io => go.opencensus.io v0.22.2
 	go.uber.org/atomic => go.uber.org/atomic v1.4.0
